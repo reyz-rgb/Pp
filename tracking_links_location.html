@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Location Tracking Links Generator</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+  body {
+    margin: 0;
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: #fff;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+  header {
+    background-color: rgba(0,0,0,0.15);
+    padding: 1.5rem 2rem;
+    text-align: center;
+    font-weight: 600;
+    font-size: 1.6rem;
+    letter-spacing: 1px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  }
+  main {
+    flex: 1;
+    max-width: 720px;
+    margin: 2rem auto 3rem;
+    background: rgba(255,255,255,0.1);
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+  }
+  h1 {
+    margin-top: 0;
+    font-weight: 700;
+    font-size: 2.4rem;
+    text-align: center;
+    margin-bottom: 1.5rem;
+  }
+  label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    font-size: 1.1rem;
+  }
+  input[type="text"] {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    border-radius: 8px;
+    border: none;
+    outline: none;
+    box-sizing: border-box;
+    font-family: inherit;
+    margin-bottom: 1rem;
+  }
+  button {
+    background: #ff7e5f;
+    background: linear-gradient(to right, #feb47b, #ff7e5f);
+    border: none;
+    padding: 0.85rem 1.6rem;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: white;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+    width: 100%;
+    box-shadow: 0 4px 6px rgba(255,126,95,0.5);
+  }
+  button:hover {
+    background: linear-gradient(to right, #ff7e5f, #feb47b);
+  }
+  .output, .locations-list {
+    margin-top: 1.5rem;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
+    padding: 1rem 1.25rem;
+    word-break: break-word;
+    font-family: monospace;
+    font-size: 0.95rem;
+  }
+  .section-divider {
+    height: 1px;
+    margin: 2rem 0;
+    background: rgba(255,255,255,0.25);
+  }
+  .locations-list {
+    max-height: 240px;
+    overflow-y: auto;
+  }
+  .location-item {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid rgba(255,255,255,0.2);
+    font-size: 0.9rem;
+  }
+  .location-item:last-child {
+    border-bottom: none;
+  }
+  a.tracking-link {
+    color: #fff;
+    font-weight: 700;
+    text-decoration: underline;
+    word-break: break-all;
+  }
+  footer {
+    text-align: center;
+    padding: 1rem;
+    font-size: 0.9rem;
+    background: rgba(0,0,0,0.15);
+    color: #ddd;
+  }
+  .tracking-link-page {
+    max-width: 600px;
+    margin: 2rem auto;
+    background: rgba(255,255,255,0.1);
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    color: white;
+    text-align: center;
+  }
+  .coords {
+    font-weight: 700;
+    font-size: 1.2rem;
+    margin-top: 1rem;
+    background: rgba(0,0,0,0.2);
+    border-radius: 8px;
+    padding: 0.5rem 1rem;
+    display: inline-block;
+    user-select: all;
+  }
+  .loading {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-top: 1.5rem;
+  }
+  .error {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #ff6b6b;
+    margin-top: 1.5rem;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  Location Tracking Links Generator
+</header>
+
+<main id="app">
+
+  <!-- Main app content will be replaced if URL matches tracking link -->
+
+  <section id="creator-section">
+    <h1>Create a Tracking Link</h1>
+    <form id="create-link-form">
+      <label for="target-url">Target URL (where visitor will be sent):</label>
+      <input type="text" id="target-url" placeholder="https://example.com" required pattern="https?://.+"/>
+      <button type="submit">Generate Tracking Link</button>
+    </form>
+
+    <div class="output" id="tracking-link-output" style="display:none;">
+      <strong>Your tracking link:</strong><br/>
+      <a href="#" target="_blank" class="tracking-link" id="tracking-link"></a>
+    </div>
+
+    <div class="section-divider"></div>
+
+    <h2>Tracked Locations (Last 20 visitors)</h2>
+    <div class="locations-list" id="locations-list">
+      <em>No location data collected yet.</em>
+    </div>
+  </section>
+
+  <section id="tracking-section" style="display:none;">
+    <div class="tracking-link-page">
+      <h1>Tracking Visitor Location...</h1>
+      <p id="info-text">Requesting your location to send it to the tracking owner and redirecting you shortly.</p>
+      <div id="location-output"></div>
+      <div id="loading-spinner" class="loading">Obtaining location...</div>
+      <div id="error-text" class="error" style="display:none;"></div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  &copy; 2024 Tracking Links Demo - Frontend Only
+</footer>
+
+<script>
+(() => {
+  const urlParams = new URLSearchParams(window.location.search);
+  const trackId = urlParams.get('trackid');
+
+  // Elements
+  const creatorSection = document.getElementById('creator-section');
+  const trackingSection = document.getElementById('tracking-section');
+  const form = document.getElementById('create-link-form');
+  const targetUrlInput = document.getElementById('target-url');
+  const trackingLinkOutput = document.getElementById('tracking-link-output');
+  const trackingLinkAnchor = document.getElementById('tracking-link');
+  const locationsList = document.getElementById('locations-list');
+
+  const infoText = document.getElementById('info-text');
+  const locationOutput = document.getElementById('location-output');
+  const loadingSpinner = document.getElementById('loading-spinner');
+  const errorText = document.getElementById('error-text');
+
+  // Utility to generate a random track ID
+  function generateTrackId() {
+    // Generate a random 8 character hex string
+    return Math.random().toString(16).slice(2, 10);
+  }
+
+  // Save recorded location data to localStorage by trackId
+  function saveLocationInfo(trackId, data) {
+    if (!trackId) return;
+    const storedData = JSON.parse(localStorage.getItem('trackedLocations')) || {};
+    if (!storedData[trackId]) {
+      storedData[trackId] = [];
+    }
+    storedData[trackId].push(data);
+    // Keep last 20 entries max
+    if (storedData[trackId].length > 20) {
+      storedData[trackId].shift();
+    }
+    localStorage.setItem('trackedLocations', JSON.stringify(storedData));
+  }
+
+  // Load location info array by trackId
+  function loadLocationInfo(trackId) {
+    const storedData = JSON.parse(localStorage.getItem('trackedLocations')) || {};
+    return storedData[trackId] || [];
+  }
+
+  // Display location info list in creator section for all track ids created by user
+  function displayLocationInfoList() {
+    const storedData = JSON.parse(localStorage.getItem('trackedLocations')) || {};
+    const keys = Object.keys(storedData);
+    if (keys.length === 0) {
+      locationsList.innerHTML = '<em>No location data collected yet.</em>';
+      return;
+    }
+    let html = '';
+    keys.forEach(tid => {
+      html += `<div style="margin-bottom:1rem;"><strong>Tracking ID: ${tid}</strong><br/>`;
+      storedData[tid].slice().reverse().forEach(loc => {
+        html += `<div class="location-item">
+          <span>Time: ${new Date(loc.timestamp).toLocaleString()}</span><br/>
+          <span>Lat: ${loc.latitude.toFixed(5)}, Lng: ${loc.longitude.toFixed(5)}</span><br/>
+          <span>Accuracy: ±${loc.accuracy} meters</span>
+        </div>`;
+      });
+      html += '</div>';
+    });
+    locationsList.innerHTML = html;
+  }
+
+  // On form submit to create a new tracking link
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+    const targetUrl = targetUrlInput.value.trim();
+    if (!targetUrl) return;
+    try {
+      new URL(targetUrl);
+    } catch {
+      alert('Please enter a valid URL starting with http:// or https://');
+      return;
+    }
+
+    const newTrackId = generateTrackId();
+
+    // Save target URL linked to trackId in localStorage for reference
+    const storedTargets = JSON.parse(localStorage.getItem('trackingTargets')) || {};
+    storedTargets[newTrackId] = targetUrl;
+    localStorage.setItem('trackingTargets', JSON.stringify(storedTargets));
+
+    // Construct tracking URL points to this same page with query parameters
+    const baseUrl = window.location.origin + window.location.pathname;
+    const trackingUrl = `${baseUrl}?trackid=${newTrackId}`;
+
+    // Show the tracking link
+    trackingLinkAnchor.href = trackingUrl;
+    trackingLinkAnchor.textContent = trackingUrl;
+    trackingLinkOutput.style.display = 'block';
+
+    displayLocationInfoList();
+  });
+
+  // If on tracking link page (trackid in URL)
+  if (trackId) {
+    creatorSection.style.display = 'none';
+    trackingSection.style.display = 'block';
+
+    // Get the target URL for this trackId from localStorage if possible
+    const storedTargets = JSON.parse(localStorage.getItem('trackingTargets')) || {};
+    const targetUrl = storedTargets[trackId] || null;
+
+    // Function to redirect to target URL
+    function redirectToTarget() {
+      if (targetUrl) {
+        window.location.href = targetUrl;
+      } else {
+        // If no target, just stay on this page
+        infoText.textContent = 'No target URL available to redirect.';
+      }
+    }
+
+    // Try to get geolocation
+    if (!navigator.geolocation) {
+      loadingSpinner.style.display = 'none';
+      errorText.style.display = 'block';
+      errorText.textContent = 'Geolocation is not supported by your browser.';
+      setTimeout(redirectToTarget, 4000);
+    } else {
+      navigator.geolocation.getCurrentPosition(
+        pos => {
+          loadingSpinner.style.display = 'none';
+          infoText.textContent = 'Thank you! Your location was obtained. Redirecting you shortly...';
+
+          // Show the coordinates info
+          const coordsDiv = document.createElement('div');
+          coordsDiv.innerHTML = `
+            <p><strong>Your Coordinates:</strong></p>
+            <p class="coords">Latitude: ${pos.coords.latitude.toFixed(6)}<br/>Longitude: ${pos.coords.longitude.toFixed(6)}</p>
+            <p>Accuracy: ±${pos.coords.accuracy} meters</p>
+          `;
+          locationOutput.appendChild(coordsDiv);
+
+          // Save location info to localStorage on the creator side
+          // We do not have backend, so save in creator's localStorage identified by trackId
+          saveLocationInfo(trackId, {
+            latitude: pos.coords.latitude,
+            longitude: pos.coords.longitude,
+            accuracy: pos.coords.accuracy,
+            timestamp: Date.now()
+          });
+
+          // Wait 6 seconds then redirect
+          setTimeout(redirectToTarget, 6000);
+        },
+        err => {
+          loadingSpinner.style.display = 'none';
+          errorText.style.display = 'block';
+          errorText.textContent = `Geolocation error: ${err.message}. Redirecting you shortly...`;
+          setTimeout(redirectToTarget, 4000);
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 0
+        }
+      );
+    }
+  } else {
+    // On creator/main page, show any saved locations
+    displayLocationInfoList();
+  }
+})();
+</script>
+
+</body>
+</html>
+
